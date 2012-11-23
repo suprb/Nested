@@ -1,0 +1,35 @@
+body {	background-color:#e1e1e1;
+				color:#666666;
+				font-family: Arial, sans-serif;
+				font-size:11px;
+				line-height: 14px;
+				padding:0px;
+				margin:20px;	
+				}
+
+a {	color:#333333; text-decoration:none; }
+
+a:hover	{ color:#666666; text-decoration:none; }
+
+.round { 		background-color:#ffffff;
+				-moz-border-radius:3px;
+  				-khtml-border-radius: 3px;
+				-webkit-border-radius:3px;
+				width: 200px;
+				padding: 10px;
+				float: left;
+				margin-right: 10px;
+				margin-bottom: 9px; }
+
+.contentIndex p img { display:none; }
+
+.eachpost, .box { 	background-color:#ffffff;
+				-moz-border-radius:3px;
+  				-khtml-border-radius: 3px;
+				-webkit-border-radius:3px;
+				position:absolute;	}
+			
+#allposts { margin-left: 0px; }
+
+.size21, .size22, .size23, .twocols { background: #ccc }
+.size31, .size32, .size33, .threecols { background: #ff3333 }
