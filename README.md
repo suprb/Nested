@@ -1,1 +1,1 @@
-!["compare"](https://github.com/suprb/Nested/blob/master/compare.jpg?raw=true)
+!["compare"](https://dl.dropbox.com/u/35476/compare.jpg)
