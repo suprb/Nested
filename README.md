@@ -1,6 +1,6 @@
 # Nested
 
-jQuery plugin for a total gap free multi column grid layout.
+jQuery plugin for a total gap free multi column grid layout experience.
 
 Demo: [http://suprb.com/apps/nested/](http://suprb.com/apps/nested/)
 
