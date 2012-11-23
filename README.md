@@ -9,6 +9,8 @@ Demo: [http://suprb.com/apps/nested/](http://suprb.com/apps/nested/)
 - **1.0**  
 Initial release
 
-#### Compare for yourself. Nested to the left. Grid-A-Licious/Masonry to the right.
+#### Compare the result
+
+Nested to the left and Grid-A-Licious, Masonry to the right.
 
 !["compare"](https://dl.dropbox.com/u/35476/compare.jpg)
