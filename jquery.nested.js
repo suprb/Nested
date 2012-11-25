@@ -46,6 +46,7 @@ jQuery.fn.reverse = [].reverse;
         minColumns: 1,
         gutter: 10,
         animate: false,
+        fillGaps: true,
     };
 
     $.Nested.prototype = {
@@ -55,7 +56,7 @@ jQuery.fn.reverse = [].reverse;
             var container = this;
             this.name = this._setName(5);
             this.rows = 1;
-            this.rowWidth = [];
+            this.matrix = {};
             this.gridrow = new Object;
             this.box = this.element;
             this.options = $.extend(true, {}, $.Nested.settings, options);
@@ -71,8 +72,10 @@ jQuery.fn.reverse = [].reverse;
                 container._renderGrid($(this));
             });
 
-            this._fillGaps();
-                        
+            if (this.options.fillGaps) {
+              this._fillGaps();
+            }
+
             // add smartresize
             $(window).smartresize(function () {
                 container.resize();
@@ -100,47 +103,65 @@ jQuery.fn.reverse = [].reverse;
                 $(this).css({
       	           'width': minWidth * x + gutter * (x-1),
       	           'height': minWidth * y + gutter * (y-1)
-      	        })
+      	        }).removeClass('moved');
             });
                     	    
         },
-
-        _fillGaps: function() {
-
-          // maxWidth är fixat nu. Nu finns det dock ett problem. blocket lägger sig i vissa fall över ett annat block om hålet är större än minWidth x minWidth. 
-          
-          console.log('width for each row is: ', this.rowWidth);
-          var self =  this;
-          var maxWidth = (this.columns-1) * this.options.minWidth + (this.columns-1) * this.options.gutter;         
-          var onlyOnce = false; // Denna gör så bara ersättning körs en gång. Har problem med att den tar boxar ovanför luckan, och att den ibland kör på samma box som den flyttade i repetetionen innan
-
-          $.each(this.rowWidth, function(index, value){
-
-            if (value < maxWidth && !onlyOnce) {
-
-              console.log('row width:', self.box.width());
-              var yVal = index * (self.options.minWidth + self.options.gutter);
-              var xVal = value;
-
-              self.box.find(self.options.selector).reverse().each(function(i, el) {
-
-                if ($(el).width() == $(el).height()) {
-
-                  $(el).css({
-      	            'width': maxWidth - value - self.options.gutter,
-      	            'height': maxWidth - value - self.options.gutter
-      	          });
-
-                  self._renderItem($(el), xVal, yVal);
-                  onlyOnce = true;
-                  return false;
-                }
-              });
+        _updateMatrix: function($box) {
+          var t = parseInt($box.css('top')) - this.box.offset().top;
+          var l = parseInt($box.css('left')) - this.box.offset().left;
+          for (var h = 0; h < $box.height(); h+=(this.options.minWidth + this.options.gutter))
+          {
+            for (var w = 0; w < $box.width(); w+=(this.options.minWidth + this.options.gutter))
+            {
+              var x = l + w;
+              var y = t + h;
+              if (!this.matrix[y]) {
+                this.matrix[y] = [];
+              }
+              this.matrix[y][x] = true;
             }
+          }
+        },
+        _fillGaps: function() {
+          var self = this;
+          var box = {};
+          this.box.find(this.options.selector).each(function(index, el){
+            self._updateMatrix($(el));
           });
-       
-       },
-       _renderGrid: function ($box) {
+          $.each(this.matrix, function(y, row){
+            $.each(row, function(x, col){
+              if (col === false) {
+                for (i = 1; i < 4; i++) // Check 3 rows down
+                {
+                  var y2 = parseInt(y) + parseInt(i * (self.options.minWidth + self.options.gutter));
+                  box.h = self.options.minWidth;
+                  if (self.matrix[y2] && self.matrix[y2][x] && self.matrix[y2][x] === false) {
+                    box.h += (self.options.minWidth + self.options.gutter);
+                    self.matrix[y2][x] = true;
+                  }
+                }
+                if (!box.x) box.x = x;
+                if (!box.y) box.y = y;
+                if (!box.w) box.w = 0;
+                box.w += (box.w) ? (self.options.minWidth + self.options.gutter) : self.options.minWidth;
+                box.ready = true;
+              } else if (box.ready) {
+                self.box.find(self.options.selector).not('.moved').reverse().each(function(i, el) {
+                  console.log(box);
+                  $(el).css({
+      	            'width': parseInt(box.w),
+      	            'height': parseInt(box.h)
+      	          }).addClass('moved');
+                  self._renderItem($(el), parseInt(box.x), parseInt(box.y));
+                  return false;
+                });
+                box = {};
+              }
+            });
+          });
+        },
+        _renderGrid: function ($box) {
 
            var ypos, gridy = ypos = 0;
            var missFits = [];
@@ -148,7 +169,7 @@ jQuery.fn.reverse = [].reverse;
               // Width & height
         	    var width = $box.width();
         	    var height = $box.height();
-        
+
         	    // Calculate row and col
         	    var col = Math.ceil(width / (this.options.minWidth + this.options.gutter));
         	    var row = Math.ceil(height / (this.options.minWidth + this.options.gutter));
@@ -163,45 +184,45 @@ jQuery.fn.reverse = [].reverse;
         	            }
         	            this.rows++;
         	        }
- 
+
         	        for (var column = 0; column < (this.columns - col); column++) {
-        	        	
-	        	          var fits = true;
-        	            
+
+                      // Add default empty matrix, used to calculate and update matrix for each box
+                      matrixY = gridy * (this.options.minWidth + this.options.gutter);
+                      matrixX = column * (this.options.minWidth + this.options.gutter);
+                      if (!this.matrix[matrixY]) this.matrix[matrixY] = [];
+                      if (!this.matrix[matrixY][matrixX]) {
+                        this.matrix[matrixY][matrixX] = false;
+                      }
+
+                      var fits = true;
+
         	            for (var y = 0; y < row; y++) {
         	                for (var x = 0; x < col; x++) {
-        	                        	                          
+
         	                    if (this.gridrow[gridy + y][column + x]) {
         	                       fits = false;
         	                       break;
         	                    }
 
-        	                    if(!fits) { 
-  
+        	                    if(!fits) {
+
         	                     // put missfits into an array (no clue why and what to do with it, but maybe something?…) 
         	                     if ($.inArray(gridy + y, missFits)<0) {
         	                       missFits.push(gridy + y);
                                }
         	                    }
-        	                    
         	                }
         	            }
-        	            
+
         	            if (fits) {
-        
+
         	                // Set as taken
         	                for (var y = 0; y < row; y++) {
         	                    for (var x = 0; x < col; x++) {
         	                        this.gridrow[gridy + y][column + x] = true;
         	                    }
         	                }
-                          
-                          // Added to calculate width for each row
-                          for (var j = gridy; j < (gridy + row); j++) {
-                            if (!this.rowWidth[j]) this.rowWidth[j] = 0;
-                            this.rowWidth[j] = this.rowWidth[j] + ($box.width() + this.options.gutter);
-                          }
-
                           this._renderItem($box, column * (this.options.minWidth + this.options.gutter), gridy * (this.options.minWidth + this.options.gutter));
         	                return;
         	            }
