@@ -8,11 +8,11 @@
  * Licensed under the MIT license.
  */
  
+jQuery.fn.reverse = [].reverse;
+
 // Debouncing function from John Hann
 // http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
 // Copy pasted from http://paulirish.com/2009/throttled-smartresize-jquery-event-handler/
-jQuery.fn.reverse = [].reverse;
-
 (function ($, sr) {
     var debounce = function (func, threshold, execAsap) {
         var timeout;
@@ -21,11 +21,11 @@ jQuery.fn.reverse = [].reverse;
                 args = arguments;
 
             function delayed() {
-                if (!execAsap) func.apply(obj, args);
+                if(!execAsap) func.apply(obj, args);
                 timeout = null;
             };
-            if (timeout) clearTimeout(timeout);
-            else if (execAsap) func.apply(obj, args);
+            if(timeout) clearTimeout(timeout);
+            else if(execAsap) func.apply(obj, args);
 
             timeout = setTimeout(delayed, threshold || 150);
         };
@@ -47,11 +47,18 @@ jQuery.fn.reverse = [].reverse;
 
     $.Nested.settings = {
         selector: '.box',
-        minWidth: 200,
+        minWidth: 100,
         minColumns: 4,
         gutter: 1,
-        animate: false,
         resizeToFit: true,
+        animate: true,
+        animationOptions: {
+            speed: 0,
+            duration: 0,
+            effect: 'fadeInOnAppear',
+            queue: true,
+            complete: function () {}
+        },
     };
 
     $.Nested.prototype = {
@@ -61,6 +68,9 @@ jQuery.fn.reverse = [].reverse;
             this.name = this._setName(5);
             this.box = this.element;
             this.options = $.extend(true, {}, $.Nested.settings, options);
+            this.total = this.box.find(this.options.selector);
+            this.elements = [];
+            this.idCounter = 0;
 
             // add smartresize
             $(window).smartresize(function () {
@@ -78,6 +88,7 @@ jQuery.fn.reverse = [].reverse;
 
         _setBoxes: function () {
             var self = this;
+            this.counter = 0;
             this.matrix = {};
             this.gridrow = new Object;
             // build columns
@@ -97,26 +108,41 @@ jQuery.fn.reverse = [].reverse;
                 $(this).css({
                     'width': minWidth * x + gutter * (x - 1),
                         'height': minWidth * y + gutter * (y - 1)
-                }).removeClass('nested-moved');
+                }).removeClass('nested-moved').attr('data-box', self.idCounter);
+
+                self.idCounter++;
 
                 // render grid
                 self._renderGrid($(this));
+
             });
 
-            // if option fillGaps is true
-            if (this.options.resizeToFit) {
-                this._fillGaps();
+            // position grid
+            if(self.counter == self.total.length) {
+
+                // if option resizeToFit is true
+                if(self.options.resizeToFit) {
+                    self.elements = self._fillGaps();
+                    self._renderItems(self.elements);
+
+                    // else
+                } else {
+                    self._renderItems(self.elements);
+                }
+
+                self.elements = [];
+
             }
         },
 
-        _updateMatrix: function ($box) {
-            var t = parseInt($box.css('top')) - this.box.offset().top;
-            var l = parseInt($box.css('left')) - this.box.offset().left;
-            for (var h = 0; h < $box.height(); h += (this.options.minWidth + this.options.gutter)) {
-                for (var w = 0; w < $box.width(); w += (this.options.minWidth + this.options.gutter)) {
+        _updateMatrix: function (el) {
+            var t = parseInt(el['y']) - this.box.offset().top;
+            var l = parseInt(el['x']) - this.box.offset().left;
+            for(var h = 0; h < el['height']; h += (this.options.minWidth + this.options.gutter)) {
+                for(var w = 0; w < el['width']; w += (this.options.minWidth + this.options.gutter)) {
                     var x = l + w;
                     var y = t + h;
-                    if (!this.matrix[y]) {
+                    if(!this.matrix[y]) {
                         this.matrix[y] = [];
                     }
                     this.matrix[y][x] = true;
@@ -127,45 +153,71 @@ jQuery.fn.reverse = [].reverse;
         _fillGaps: function () {
             var self = this;
             var box = {};
-            this.box.find(this.options.selector).each(function (index, el) {
-                self._updateMatrix($(el));
+
+            $.each(this.elements, function (index, el) {
+                self._updateMatrix(el);
             });
+
             $.each(this.matrix, function (y, row) {
                 $.each(row, function (x, col) {
-                    if (col === false) {
-                        for (i = 1; i < 4; i++) // Check 3 rows down
+
+                    if(col === false) {
+                        for(i = 1; i < 4; i++) // Check 3 rows down
                         {
                             var y2 = parseInt(y) + parseInt(i * (self.options.minWidth + self.options.gutter));
                             box.h = self.options.minWidth;
-                            if (self.matrix[y2] && self.matrix[y2][x] && self.matrix[y2][x] === false) {
+                            if(self.matrix[y2] && self.matrix[y2][x] && self.matrix[y2][x] === false) {
                                 box.h += (self.options.minWidth + self.options.gutter);
                                 self.matrix[y2][x] = true;
                             }
                         }
-                        if (!box.x) box.x = x;
-                        if (!box.y) box.y = y;
-                        if (!box.w) box.w = 0;
+                        if(!box.x) box.x = x;
+                        if(!box.y) box.y = y;
+                        if(!box.w) box.w = 0;
                         box.w += (box.w) ? (self.options.minWidth + self.options.gutter) : self.options.minWidth;
                         box.ready = true;
-                    } else if (box.ready) {
+
+                    } else if(box.ready) {
+
                         self.box.find(self.options.selector).not('.nested-moved').reverse().each(function (i, el) {
-                            console.log(box);
                             $(el).css({
-                                'width': parseInt(box.w),
+                                'width': box.w,
                                     'height': parseInt(box.h)
                             }).addClass('nested-moved');
-                            self._renderItem($(el), parseInt(box.x), parseInt(box.y));
+
+                            for(var i = 0, len = self.elements.length; i < len; i++) {
+                                if(self.elements[i]['$el'].attr('data-box') == $(el).attr('data-box')) {
+                                    result = self.elements[i]['$el'];
+                                    self.elements.splice(i, 1);
+                                    break;
+                                }
+                            }
+                            self.elements.push({
+                                $el: $(el),
+                                x: parseInt(box.x) + self.box.offset().top,
+                                y: parseInt(box.y) + self.box.offset().top,
+                                width: parseInt(box.w),
+                                height: parseInt(box.h)
+                            });
+
+
                             return false;
                         });
                         box = {};
                     }
                 });
+
             });
+
+            return self.elements;
         },
 
         _renderGrid: function ($box) {
 
+            this.counter++;
+
             var ypos, gridy = ypos = 0;
+            var tot = 0;
 
             // Width & height
             var width = $box.width();
@@ -175,49 +227,51 @@ jQuery.fn.reverse = [].reverse;
             var col = Math.ceil(width / (this.options.minWidth + this.options.gutter));
             var row = Math.ceil(height / (this.options.minWidth + this.options.gutter));
 
-            while (true) {
-                for (var y = col; y >= 0; y--) {
-                    if (this.gridrow[gridy + y]) break;
+            while(true) {
+                for(var y = col; y >= 0; y--) {
+                    if(this.gridrow[gridy + y]) break;
                     this.gridrow[gridy + y] = new Object;
-                    for (var x = 0; x < this.columns; x++) {
+                    for(var x = 0; x < this.columns; x++) {
                         this.gridrow[gridy + y][x] = false;
                     }
                 }
 
-                for (var column = 0; column < (this.columns - col); column++) {
+                for(var column = 0; column < (this.columns - col); column++) {
 
                     // Add default empty matrix, used to calculate and update matrix for each box
                     matrixY = gridy * (this.options.minWidth + this.options.gutter);
                     matrixX = column * (this.options.minWidth + this.options.gutter);
 
-                    if (!this.matrix[matrixY]) this.matrix[matrixY] = [];
-                    if (!this.matrix[matrixY][matrixX]) {
+                    if(!this.matrix[matrixY]) this.matrix[matrixY] = [];
+                    if(!this.matrix[matrixY][matrixX]) {
                         this.matrix[matrixY][matrixX] = false;
                     }
 
                     var fits = true;
 
-                    for (var y = 0; y < row; y++) {
-                        for (var x = 0; x < col; x++) {
-                            if (this.gridrow[gridy + y][column + x]) {
+                    for(var y = 0; y < row; y++) {
+                        for(var x = 0; x < col; x++) {
+                            if(this.gridrow[gridy + y][column + x]) {
                                 fits = false;
                                 break;
                             }
-                            if (!fits) {
+                            if(!fits) {
                                 break;
                             }
                         }
                     }
 
-                    if (fits) {
+                    if(fits) {
 
                         // Set as taken
-                        for (var y = 0; y < row; y++) {
-                            for (var x = 0; x < col; x++) {
+                        for(var y = 0; y < row; y++) {
+                            for(var x = 0; x < col; x++) {
                                 this.gridrow[gridy + y][column + x] = true;
                             }
                         }
-                        this._renderItem($box, column * (this.options.minWidth + this.options.gutter), gridy * (this.options.minWidth + this.options.gutter));
+                        
+                        // Push to elements array
+                        this._pushItem($box, column * (this.options.minWidth + this.options.gutter), gridy * (this.options.minWidth + this.options.gutter), width, height, col, row);
                         return;
                     }
 
@@ -226,10 +280,70 @@ jQuery.fn.reverse = [].reverse;
             }
         },
 
+        _pushItem: function ($el, x, y, w, h, cols, rows) {
+
+            this.elements.push({
+                $el: $el,
+                x: x + this.box.offset().left,
+                y: y + this.box.offset().top,
+                width: w,
+                height: h,
+                cols: cols,
+                rows: rows
+            });
+        },
+
+
+        resize: function () {
+            this._setBoxes();
+        },
+
+        _renderItems: function ($els) {
+
+            var speed = this.options.animationOptions.speed;
+            var effect = this.options.animationOptions.effect;
+            var duration = this.options.animationOptions.duration;
+            var queue = this.options.animationOptions.queue;
+            var animate = this.options.animate;
+            var complete = this.options.animationOptions.complete;
+            var item = this;
+            var i = 0;
+            var t = 0;
+
+
+            $.each($els, function (index, value) {
+
+                setTimeout(function () {
+
+                    value['$el'].css({
+                        'width': value['width'],
+                        'height': value['height'],
+                        'left': value['x'],
+                        'top': value['y']
+                    });
+
+                    t++;
+                    // complete.call(undefined, items)
+                }, i * speed);
+                i++;
+            });
+        },
+
         _renderItem: function ($el, x, y) {
+
+            var speed = this.options.animationOptions.speed;
+            var effect = this.options.animationOptions.effect;
+            var duration = this.options.animationOptions.duration;
+            var queue = this.options.animationOptions.queue;
+            var animate = this.options.animate;
+            var complete = this.options.animationOptions.complete;
+            var item = this.box;
+            var i = 0;
+            var t = 0;
+
             $el.css({
                 'left': x + this.box.offset().left,
-                    'top': y + this.box.offset().top
+                'top': y + this.box.offset().top
             });
         },
 
@@ -240,7 +354,7 @@ jQuery.fn.reverse = [].reverse;
     }
 
     $.fn.nested = function (options, e) {
-        if (typeof options === 'string') {
+        if(typeof options === 'string') {
             this.each(function () {
                 var container = $.data(this, 'nested');
                 container[options].apply(container, [e]);
