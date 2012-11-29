@@ -53,9 +53,8 @@ jQuery.fn.reverse = [].reverse;
         resizeToFit: true,
         animate: true,
         animationOptions: {
-            speed: 0,
-            duration: 0,
-            effect: 'fadeInOnAppear',
+            speed: 100,
+            duration: 200,
             queue: true,
             complete: function () {}
         },
@@ -68,9 +67,8 @@ jQuery.fn.reverse = [].reverse;
             this.name = this._setName(5);
             this.box = this.element;
             this.options = $.extend(true, {}, $.Nested.settings, options);
-            this.total = this.box.find(this.options.selector);
             this.elements = [];
-            this.idCounter = 0;
+            this._isResizing = false;
 
             // add smartresize
             $(window).smartresize(function () {
@@ -86,9 +84,11 @@ jQuery.fn.reverse = [].reverse;
             return length ? this._setName(--length, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz".charAt(Math.floor(Math.random() * 60)) + current) : current;
         },
 
-        _setBoxes: function () {
+        _setBoxes: function ($els) {
             var self = this;
+            this.idCounter = 0;
             this.counter = 0;
+            this.total = this.box.find(this.options.selector);
             this.matrix = {};
             this.gridrow = new Object;
             // build columns
@@ -97,26 +97,29 @@ jQuery.fn.reverse = [].reverse;
             var minWidth = this.options.minWidth;
             var gutter = this.options.gutter;
             var gridrow = new Object;
-            var columns = this.columns;
+
+            var display = !this._isResizing ? "none" : "block";
 
             $.each(this.box.find(this.options.selector), function () {
-
+  
                 var dim = parseInt($(this).attr('class').replace(/^.*size([0-9]+).*$/, '$1')).toString().split('');
                 var x = (dim[0] == "N") ? 1 : parseFloat(dim[0]);
                 var y = (dim[1] == "a") ? 1 : parseFloat(dim[1]);
-
+  
                 $(this).css({
+                    'display': display,
+                    'position': 'absolute',
                     'width': minWidth * x + gutter * (x - 1),
-                        'height': minWidth * y + gutter * (y - 1)
+                    'height': minWidth * y + gutter * (y - 1)
                 }).removeClass('nested-moved').attr('data-box', self.idCounter);
-
+  
                 self.idCounter++;
-
+  
                 // render grid
                 self._renderGrid($(this));
-
+  
             });
-
+ 
             // position grid
             if(self.counter == self.total.length) {
 
@@ -158,11 +161,17 @@ jQuery.fn.reverse = [].reverse;
                 self._updateMatrix(el);
             });
 
+            var arr = this.elements;
+            arr.sort(function(a,b) {
+                return a.y - b.y;
+            });
+            arr.reverse();
+          
             $.each(this.matrix, function (y, row) {
                 $.each(row, function (x, col) {
 
                     if(col === false) {
-                        for(i = 1; i < 4; i++) // Check 3 rows down
+                        for(i = 1; i < 5; i++) // Check 3 rows down
                         {
                             var y2 = parseInt(y) + parseInt(i * (self.options.minWidth + self.options.gutter));
                             box.h = self.options.minWidth;
@@ -174,27 +183,29 @@ jQuery.fn.reverse = [].reverse;
                         if(!box.x) box.x = x;
                         if(!box.y) box.y = y;
                         if(!box.w) box.w = 0;
+                        
                         box.w += (box.w) ? (self.options.minWidth + self.options.gutter) : self.options.minWidth;
                         box.ready = true;
 
                     } else if(box.ready) {
 
-                        self.box.find(self.options.selector).not('.nested-moved').reverse().each(function (i, el) {
-                            $(el).css({
-                                'width': box.w,
-                                    'height': parseInt(box.h)
-                            }).addClass('nested-moved');
-
+                                                
+                     //self.box.find(self.options.selector).not('.nested-moved').reverse().each(function (i, el) {
+                         
+                         $.each(arr, function (i, el) {  el = el['$el'];
+                           
+                            $(el).addClass('nested-moved');
+                            
                             for(var i = 0, len = self.elements.length; i < len; i++) {
                                 if(self.elements[i]['$el'].attr('data-box') == $(el).attr('data-box')) {
-                                    result = self.elements[i]['$el'];
                                     self.elements.splice(i, 1);
                                     break;
                                 }
                             }
+                            
                             self.elements.push({
                                 $el: $(el),
-                                x: parseInt(box.x) + self.box.offset().top,
+                                x: parseInt(box.x) + self.box.offset().left,
                                 y: parseInt(box.y) + self.box.offset().top,
                                 width: parseInt(box.w),
                                 height: parseInt(box.h)
@@ -273,6 +284,7 @@ jQuery.fn.reverse = [].reverse;
                         // Push to elements array
                         this._pushItem($box, column * (this.options.minWidth + this.options.gutter), gridy * (this.options.minWidth + this.options.gutter), width, height, col, row);
                         return;
+
                     }
 
                 }
@@ -289,17 +301,12 @@ jQuery.fn.reverse = [].reverse;
                 width: w,
                 height: h,
                 cols: cols,
-                rows: rows
+                rows: rows,
             });
         },
 
-
-        resize: function () {
-            this._setBoxes();
-        },
-
         _renderItems: function ($els) {
-
+            
             var speed = this.options.animationOptions.speed;
             var effect = this.options.animationOptions.effect;
             var duration = this.options.animationOptions.duration;
@@ -310,22 +317,62 @@ jQuery.fn.reverse = [].reverse;
             var i = 0;
             var t = 0;
 
-
             $.each($els, function (index, value) {
 
-                setTimeout(function () {
-
-                    value['$el'].css({
+                //if animate and queue
+                if(animate && queue) {                
+                  setTimeout(function () {
+                      value['$el'].css({
+                        'display': 'block',
                         'width': value['width'],
                         'height': value['height'],
+                      }).animate({
                         'left': value['x'],
-                        'top': value['y']
-                    });
+                        'top': value['y'],
+                      }, duration);
+                      t++;
+                      if (t == $els.length) {
+                          complete.call(undefined, $els)
+                      }
+                  }, i * speed);
+                  i++;
+                }
 
+
+              if(animate && !queue) {                
+                //if animate and no queue
+                setTimeout(function () {
+                    value['$el'].css({
+                      'display': 'block',
+                      'width': value['width'],
+                      'height': value['height'],
+                    }).animate({
+                      'left': value['x'],
+                      'top': value['y'],
+                    }, duration);
                     t++;
-                    // complete.call(undefined, items)
-                }, i * speed);
+                    if (t == $els.length) {
+                        complete.call(undefined, $els)
+                    }
+                }, i);
                 i++;
+              }
+
+              if(!animate) {                
+                    value['$el'].css({
+                      'display': 'block',
+                      'width': value['width'],
+                      'height': value['height'],
+                      'left': value['x'],
+                      'top': value['y'],
+                    });
+                    t++;
+                    if (t == $els.length) {
+                        complete.call(undefined, $els)
+                    }
+              }
+
+
             });
         },
 
@@ -347,8 +394,16 @@ jQuery.fn.reverse = [].reverse;
             });
         },
 
-        resize: function () {
+        append: function ($els) {
+            console.log($els);
+            this._isResizing = true;
             this._setBoxes();
+        },
+
+        resize: function () {
+            this._isResizing = true;
+            this._setBoxes();
+            this._isResizing = false;
         },
 
     }

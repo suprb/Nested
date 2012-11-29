@@ -23,7 +23,7 @@ a:hover	{ color:#666666; text-decoration:none; }
 
 .contentIndex p img { display:none; }
 
-.eachpost, .box { 	background-color:#ffffff;
+.box { 	background-color:#ffffff;
 				-moz-border-radius:3px;
   				-khtml-border-radius: 3px;
 				-webkit-border-radius:3px;
