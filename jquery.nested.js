@@ -51,7 +51,7 @@ jQuery.fn.reverse = [].reverse;
         minColumns: 4,
         gutter: 1,
         resizeToFit: true,
-        animate: true,
+        animate: false,
         animationOptions: {
             speed: 100,
             duration: 200,
@@ -137,16 +137,29 @@ jQuery.fn.reverse = [].reverse;
 
             }
         },
+        
+        _addMatrixRow: function(y) { // Add empty row for matrix
+            if (this.matrix[y]) {
+              return false;
+            } else this.matrix[y] = [];
+            for (var c = 0; c < (this.columns - 1); c++)
+            {
+              var x = c * (this.options.minWidth + this.options.gutter);
+              this.matrix[y][x] = false;
+            }
+        },
 
-        _updateMatrix: function (el) {
+        _updateMatrix: function (el) { // Update matrix based on box
             var t = parseInt(el['y']) - this.box.offset().top;
             var l = parseInt(el['x']) - this.box.offset().left;
-            for(var h = 0; h < el['height']; h += (this.options.minWidth + this.options.gutter)) {
-                for(var w = 0; w < el['width']; w += (this.options.minWidth + this.options.gutter)) {
+            for (var h = 0; h < el['height']; h += (this.options.minWidth + this.options.gutter)) 
+            {
+                for (var w = 0; w < el['width']; w += (this.options.minWidth + this.options.gutter)) 
+                {
                     var x = l + w;
                     var y = t + h;
-                    if(!this.matrix[y]) {
-                        this.matrix[y] = [];
+                    if (!this.matrix[y]) {
+                      this._addMatrixRow(y);
                     }
                     this.matrix[y][x] = true;
                 }
@@ -157,33 +170,35 @@ jQuery.fn.reverse = [].reverse;
             var self = this;
             var box = {};
 
-            $.each(this.elements, function (index, el) {
-                self._updateMatrix(el);
+            $.each(this.elements, function (index, el) { 
+              self._updateMatrix(el);
             });
-
+            
+            
             var arr = this.elements;
             arr.sort(function(a,b) {
                 return a.y - b.y;
             });
             arr.reverse();
-          
+            
+            var topY = arr[0]['y'];
             $.each(this.matrix, function (y, row) {
                 $.each(row, function (x, col) {
 
                     if(col === false) {
-                        for(i = 1; i < 5; i++) // Check 3 rows down
+                        for(row = 0; row < 5; row++) // Check 3 rows down
                         {
-                            var y2 = parseInt(y) + parseInt(i * (self.options.minWidth + self.options.gutter));
                             box.h = self.options.minWidth;
-                            if(self.matrix[y2] && self.matrix[y2][x] && self.matrix[y2][x] === false) {
+                            var z = parseInt(y) + parseInt(row * (self.options.minWidth + self.options.gutter));
+                            if (self.matrix[z] && self.matrix[z][x] === false) {
                                 box.h += (self.options.minWidth + self.options.gutter);
-                                self.matrix[y2][x] = true;
+                                self.matrix[z][x] = true;
                             }
                         }
                         if(!box.x) box.x = x;
                         if(!box.y) box.y = y;
                         if(!box.w) box.w = 0;
-                        
+
                         box.w += (box.w) ? (self.options.minWidth + self.options.gutter) : self.options.minWidth;
                         box.ready = true;
 
@@ -192,8 +207,20 @@ jQuery.fn.reverse = [].reverse;
                                                 
                      //self.box.find(self.options.selector).not('.nested-moved').reverse().each(function (i, el) {
                          
-                         $.each(arr, function (i, el) {  el = el['$el'];
-                           
+                         $.each(arr, function (i, el) {
+                            el = el['$el'];
+                            if (arr[i]['y'] == topY && box.y < arr[i]['y']) {
+                              item = arr.splice(i, 1);
+                              self.elements.push({
+                                $el: $(el),
+                                x: parseInt(box.x) + self.box.offset().left,
+                                y: parseInt(box.y) + self.box.offset().top,
+                                width: parseInt(box.w),
+                                height: parseInt(box.h)
+                              });
+                              return false;
+                            }
+                            /*
                             $(el).addClass('nested-moved');
                             
                             for(var i = 0, len = self.elements.length; i < len; i++) {
@@ -213,12 +240,14 @@ jQuery.fn.reverse = [].reverse;
 
 
                             return false;
+                           */
                         });
                         box = {};
                     }
                 });
 
             });
+            console.log(self.matrix);
 
             return self.elements;
         },
@@ -251,12 +280,7 @@ jQuery.fn.reverse = [].reverse;
 
                     // Add default empty matrix, used to calculate and update matrix for each box
                     matrixY = gridy * (this.options.minWidth + this.options.gutter);
-                    matrixX = column * (this.options.minWidth + this.options.gutter);
-
-                    if(!this.matrix[matrixY]) this.matrix[matrixY] = [];
-                    if(!this.matrix[matrixY][matrixX]) {
-                        this.matrix[matrixY][matrixX] = false;
-                    }
+                    this._addMatrixRow(matrixY);
 
                     var fits = true;
 
