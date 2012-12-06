@@ -48,7 +48,7 @@ jQuery.fn.reverse = [].reverse;
     $.Nested.settings = {
         selector: '.box',
         minWidth: 100,
-        minColumns: 4,
+        minColumns: 1,
         gutter: 1,
         resizeToFit: true,
         animate: false,
@@ -93,7 +93,7 @@ jQuery.fn.reverse = [].reverse;
             this.gridrow = new Object;
             // build columns
             this.columns = Math.max(this.options.minColumns, parseInt(this.box.innerWidth() / (this.options.minWidth + this.options.gutter))) + 1;
-
+      
             var minWidth = this.options.minWidth;
             var gutter = this.options.gutter;
             var gridrow = new Object;
@@ -248,7 +248,6 @@ jQuery.fn.reverse = [].reverse;
 
             });
             console.log(self.matrix);
-
             return self.elements;
         },
 
@@ -266,6 +265,11 @@ jQuery.fn.reverse = [].reverse;
             // Calculate row and col
             var col = Math.ceil(width / (this.options.minWidth + this.options.gutter));
             var row = Math.ceil(height / (this.options.minWidth + this.options.gutter));
+
+            // lock widest box to match minColumns
+            if (col > this.options.minColumns) {
+                this.options.minColumns = col;
+            }
 
             while(true) {
                 for(var y = col; y >= 0; y--) {
