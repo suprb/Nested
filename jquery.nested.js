@@ -139,13 +139,15 @@ jQuery.fn.reverse = [].reverse;
         },
         
         _addMatrixRow: function(y) { // Add empty row for matrix
+		
             if (this.matrix[y]) {
-              return false;
-            } else this.matrix[y] = [];
-            for (var c = 0; c < (this.columns - 1); c++)
+              	return false;
+            } else this.matrix[y] = {};
+            
+			for (var c = 0; c < (this.columns - 1); c++)
             {
-              var x = c * (this.options.minWidth + this.options.gutter);
-              this.matrix[y][x] = false;
+              	var x = c * (this.options.minWidth + this.options.gutter);
+              	this.matrix[y][x] = 'false';
             }
         },
 
@@ -161,7 +163,7 @@ jQuery.fn.reverse = [].reverse;
                     if (!this.matrix[y]) {
                       this._addMatrixRow(y);
                     }
-                    this.matrix[y][x] = true;
+                    this.matrix[y][x] = 'true';
                 }
             }
         },
@@ -169,12 +171,11 @@ jQuery.fn.reverse = [].reverse;
         _fillGaps: function () {
             var self = this;
             var box = {};
-
+			
             $.each(this.elements, function (index, el) { 
               self._updateMatrix(el);
             });
-            
-            
+
             var arr = this.elements;
             arr.sort(function(a,b) {
                 return a.y - b.y;
@@ -182,43 +183,48 @@ jQuery.fn.reverse = [].reverse;
             arr.reverse();
             
             var topY = arr[0]['y'];
+			var tolerance = 25; // How many rows down should we search for gaps?
+
             $.each(this.matrix, function (y, row) {
                 $.each(row, function (x, col) {
-
-                    if(col === false) {
-                        for(row = 0; row < 5; row++) // Check 3 rows down
+					
+                    if (col === 'false') {
+						console.log('Match found y/x', y,x);
+						if (!box.y) box.y = y;
+						if (!box.x) box.x = x;
+                        if (!box.w) box.w = 0;
+						if (!box.h) box.h = 0;
+						box.w += (box.w) ? (self.options.minWidth + self.options.gutter) : self.options.minWidth;
+						box.h += (box.h) ? (self.options.minWidth + self.options.gutter) : self.options.minWidth;
+                        
+						
+						var addition = 0;
+						for(var row = 1; row < tolerance; row++)
                         {
-                            box.h = self.options.minWidth;
                             var z = parseInt(y) + parseInt(row * (self.options.minWidth + self.options.gutter));
-                            if (self.matrix[z] && self.matrix[z][x] === false) {
-                                box.h += (self.options.minWidth + self.options.gutter);
-                                self.matrix[z][x] = true;
-                            }
+							if (self.matrix[z] && self.matrix[z][x] == 'false') {
+                            	addition += (self.options.minWidth + self.options.gutter);
+                                self.matrix[z][x] = 'true';
+                            } else break;
                         }
-                        if(!box.x) box.x = x;
-                        if(!box.y) box.y = y;
-                        if(!box.w) box.w = 0;
-
-                        box.w += (box.w) ? (self.options.minWidth + self.options.gutter) : self.options.minWidth;
+						box.h + (parseInt(addition) / (self.options.minWidth + self.options.gutter) == tolerance) ? 0 : parseInt(addition);
                         box.ready = true;
 
                     } else if(box.ready) {
-
-                                                
-                     //self.box.find(self.options.selector).not('.nested-moved').reverse().each(function (i, el) {
-                         
-                         $.each(arr, function (i, el) {
-                            el = el['$el'];
+                    	$.each(arr, function (i, el) {
+							el = el['$el'];
+							//  if (arr[i]['y'] == topY && (box.y + self.box.offset().top) < arr[i]['y']) { solves last line problems
                             if (arr[i]['y'] == topY && box.y < arr[i]['y']) {
-                              item = arr.splice(i, 1);
-                              self.elements.push({
-                                $el: $(el),
-                                x: parseInt(box.x) + self.box.offset().left,
-                                y: parseInt(box.y) + self.box.offset().top,
-                                width: parseInt(box.w),
-                                height: parseInt(box.h)
-                              });
-                              return false;
+                              	$(el).addClass('nested-moved');
+								item = arr.splice(i, 1);
+                              	self.elements.push({
+                                	$el: $(el),
+                                	x: parseInt(box.x) + self.box.offset().left,
+                                	y: parseInt(box.y) + self.box.offset().top,
+                                	width: parseInt(box.w),
+                                	height: parseInt(box.h)
+                              	});
+                              	return false;
                             }
                             /*
                             $(el).addClass('nested-moved');
@@ -247,7 +253,7 @@ jQuery.fn.reverse = [].reverse;
                 });
 
             });
-            console.log(self.matrix);
+            console.log('Matrix after fill: ', this.matrix);
             return self.elements;
         },
 
