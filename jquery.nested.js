@@ -51,6 +51,7 @@ jQuery.fn.reverse = [].reverse;
         minColumns: 1,
         gutter: 1,
         resizeToFit: true,
+		resizeUpscale: true,
         animate: false,
         animationOptions: {
             speed: 100,
@@ -224,12 +225,11 @@ jQuery.fn.reverse = [].reverse;
 
                     } else if (box.ready) {
                     	$.each(arr, function (i, el) {
-                            if (arr[i]['y'] == topY && box.y < arr[i]['y']) {
-								el = el['$el'];
-								$(el).addClass('nested-moved');
-								item = arr.splice(i, 1);
+							if (box.y <= arr[i]['y'] && (self.options.resizeUpscale || box.w <= arr[i]['width'] && box.h <= arr[i]['height'])) {
+								arr.splice(i, 1);
+								$(el['$el']).addClass('nested-moved');
                               	self.elements.push({
-                                	$el: $(el),
+                                	$el: $(el['$el']),
                                 	x: parseInt(box.x) + self.box.offset().left,
                                 	y: parseInt(box.y) + self.box.offset().top,
                                 	width: parseInt(box.w),
