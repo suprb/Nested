@@ -138,8 +138,7 @@ jQuery.fn.reverse = [].reverse;
             }
         },
         
-        _addMatrixRow: function(y) { // Add empty row for matrix
-		
+        _addMatrixRow: function(y) {
             if (this.matrix[y]) {
               	return false;
             } else this.matrix[y] = {};
@@ -151,7 +150,7 @@ jQuery.fn.reverse = [].reverse;
             }
         },
 
-        _updateMatrix: function (el) { // Update matrix based on box
+        _updateMatrix: function (el) {
             var t = parseInt(el['y']) - this.box.offset().top;
             var l = parseInt(el['x']) - this.box.offset().left;
             for (var h = 0; h < el['height']; h += (this.options.minWidth + this.options.gutter)) 
@@ -168,6 +167,14 @@ jQuery.fn.reverse = [].reverse;
             }
         },
 
+		_getObjectSize: function (obj) { // Helper to get size of object, should probadly be moved
+			var size = 0;
+		    $.each(obj, function (p, v) {
+		        size++;
+		    });
+		    return size;
+		},
+
         _fillGaps: function () {
             var self = this;
             var box = {};
@@ -175,47 +182,51 @@ jQuery.fn.reverse = [].reverse;
             $.each(this.elements, function (index, el) { 
               self._updateMatrix(el);
             });
-
+			
             var arr = this.elements;
             arr.sort(function(a,b) {
                 return a.y - b.y;
             });
             arr.reverse();
             
+			// Used to keep the highest y value for a box in memory
             var topY = arr[0]['y'];
-			var tolerance = 25; // How many rows down should we search for gaps?
-
-            $.each(this.matrix, function (y, row) {
-                $.each(row, function (x, col) {
-					
-                    if (col === 'false') {
-						console.log('Match found y/x', y,x);
+			
+			// Used for current y with added offset
+			var actualY = 0;
+			
+			// Current number of rows in matrix
+            var rowsLeft = this._getObjectSize(this.matrix);
+			
+			$.each(this.matrix, function (y, row) {
+               	rowsLeft--;
+				actualY = parseInt(y) + parseInt(self.box.offset().top);
+				$.each(row, function (x, col) {
+                    if (col === 'false' && actualY < topY) {
 						if (!box.y) box.y = y;
 						if (!box.x) box.x = x;
                         if (!box.w) box.w = 0;
-						if (!box.h) box.h = 0;
+						if (!box.h) box.h = self.options.minWidth;
 						box.w += (box.w) ? (self.options.minWidth + self.options.gutter) : self.options.minWidth;
-						box.h += (box.h) ? (self.options.minWidth + self.options.gutter) : self.options.minWidth;
-                        
 						
-						var addition = 0;
-						for(var row = 1; row < tolerance; row++)
+						var addonHeight = 0;
+						for(var row = 1; row < rowsLeft; row++)
                         {
                             var z = parseInt(y) + parseInt(row * (self.options.minWidth + self.options.gutter));
 							if (self.matrix[z] && self.matrix[z][x] == 'false') {
-                            	addition += (self.options.minWidth + self.options.gutter);
+                            	addonHeight += (self.options.minWidth + self.options.gutter);
                                 self.matrix[z][x] = 'true';
                             } else break;
                         }
-						box.h + (parseInt(addition) / (self.options.minWidth + self.options.gutter) == tolerance) ? 0 : parseInt(addition);
+	
+						box.h + (parseInt(addonHeight) / (self.options.minWidth + self.options.gutter) == rowsLeft) ? 0 : parseInt(addonHeight);
                         box.ready = true;
 
-                    } else if(box.ready) {
+                    } else if (box.ready) {
                     	$.each(arr, function (i, el) {
-							el = el['$el'];
-							//  if (arr[i]['y'] == topY && (box.y + self.box.offset().top) < arr[i]['y']) { solves last line problems
                             if (arr[i]['y'] == topY && box.y < arr[i]['y']) {
-                              	$(el).addClass('nested-moved');
+								el = el['$el'];
+								$(el).addClass('nested-moved');
 								item = arr.splice(i, 1);
                               	self.elements.push({
                                 	$el: $(el),
@@ -226,34 +237,12 @@ jQuery.fn.reverse = [].reverse;
                               	});
                               	return false;
                             }
-                            /*
-                            $(el).addClass('nested-moved');
-                            
-                            for(var i = 0, len = self.elements.length; i < len; i++) {
-                                if(self.elements[i]['$el'].attr('data-box') == $(el).attr('data-box')) {
-                                    self.elements.splice(i, 1);
-                                    break;
-                                }
-                            }
-                            
-                            self.elements.push({
-                                $el: $(el),
-                                x: parseInt(box.x) + self.box.offset().left,
-                                y: parseInt(box.y) + self.box.offset().top,
-                                width: parseInt(box.w),
-                                height: parseInt(box.h)
-                            });
-
-
-                            return false;
-                           */
                         });
                         box = {};
                     }
                 });
 
             });
-            console.log('Matrix after fill: ', this.matrix);
             return self.elements;
         },
 
