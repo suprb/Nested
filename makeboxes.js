@@ -1,6 +1,7 @@
 makeBoxes = function() {
   var boxes = [],
-      count = Math.random()*4;
+      count = Math.random()*15;
+      if (count < 5) count = 5;
 
   for (var i=0; i < count; i++ ) {
     var box = document.createElement('div');
