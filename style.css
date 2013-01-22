@@ -4,23 +4,19 @@ body {	background-color:#e1e1e1;
 				font-size:11px;
 				line-height: 14px;
 				padding:0px;
-				margin:1px;	
+				margin:0px;	
 				}
 
-a {	color:#333333; text-decoration:none; }
-
-a:hover	{ color:#666666; text-decoration:none; }
 
 .box { 	background-color:#ff4499;
 				-moz-border-radius:3px;
-  				-khtml-border-radius: 3px;
+  		  -khtml-border-radius: 3px;
 				-webkit-border-radius:3px;
 				border-radius:3px;
-				position:absolute;	}
+				}
 			
 #firstbox { background: red; }
-#secondbox { background: blue }
+#secondbox { background: yellow }
 
-/*.size21, .size22, .size23, .twocols { background: #ccc }
-.size31, .size32, .size33, .threecols { background: #ff3333 }
-*/
+.size21, .size22, .size23, .twocols { background: #ccc }
+.size31, .size32, .size33, .threecols { background: #ff9999 }

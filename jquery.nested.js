@@ -48,14 +48,14 @@
         selector: '.box',
         minWidth: 50,
         minColumns: 1,
-        gutter: 10,
+        gutter: 1,
         resizeToFit: true, // will resize block bigger than the gap
         resizeToFitOptions: {
             resizeAny: true // will resize any block to fit the gap         
         },
         animate: true,
         animationOptions: {
-            speed: 100,
+            speed: 50,
             duration: 200,
             queue: true,
             complete: function () {}
@@ -94,7 +94,7 @@
             this.matrix = {};
             this.gridrow = new Object;
             this.columns = Math.max(this.options.minColumns, parseInt(this.box.innerWidth() / (this.options.minWidth + this.options.gutter)) + 1);
-
+            
             // build columns
             var minWidth = this.options.minWidth;
             var gutter = this.options.gutter;
@@ -271,6 +271,8 @@
             }
        
             while(true) {             
+                
+                
                 for(var y = col; y >= 0; y--) {
                     if(this.gridrow[gridy + y]) break;
                     this.gridrow[gridy + y] = new Object;
@@ -278,6 +280,7 @@
                         this.gridrow[gridy + y][x] = false;
                     }
                 }
+                
                 for(var column = 0; column < (this.columns - col); column++) {
 
                     // Add default empty matrix, used to calculate and update matrix for each box
@@ -288,19 +291,24 @@
 
                     for(var y = 0; y < row; y++) {
                         for(var x = 0; x < col; x++) {
+                            
+                            if(!this.gridrow[gridy + y]) { break; }
+                            
                             if(this.gridrow[gridy + y][column + x]) {
                                 fits = false;
                                 break;
                             }
+                        }
                             if(!fits) {
                                 break;
                             }
-                        }
                     }
                     if(fits) {
                         // Set as taken
                         for(var y = 0; y < row; y++) {
                             for(var x = 0; x < col; x++) {
+                                
+                                if(!this.gridrow[gridy + y]) { break; }
                                 this.gridrow[gridy + y][column + x] = true;
                             }
                         }                      
@@ -367,14 +375,14 @@
             var t = 0;
 
             $.each($els, function (index, value) {
-                            
+                                     
                 $currLeft = $(value['$el']).offset().left;
                 $currTop = $(value['$el']).offset().top;
                 $currWidth = $(value['$el']).width();
                 $currHeight = $(value['$el']).width();
                 
                 if($currTop < 1) {
-                  $currTop = value['y'];
+                  //$currTop = value['y'];
                 }
                 
                 value['$el'].attr('data-y', $currTop).attr('data-x', $currLeft);                
