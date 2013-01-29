@@ -3,7 +3,7 @@ body {	background-color:#e1e1e1;
 				font-family: Arial, sans-serif;
 				font-size:11px;
 				line-height: 14px;
-				padding:0px;
+				padding:1px;
 				margin:0px;	
 				}
 
@@ -13,10 +13,35 @@ body {	background-color:#e1e1e1;
   		  -khtml-border-radius: 3px;
 				-webkit-border-radius:3px;
 				border-radius:3px;
-				}
+
+ 
+-webkit-transition: all 300ms cubic-bezier(1.000, 0.000, 0.000, 1.000); 
+   -moz-transition: all 300ms cubic-bezier(1.000, 0.000, 0.000, 1.000); 
+    -ms-transition: all 300ms cubic-bezier(1.000, 0.000, 0.000, 1.000); 
+     -o-transition: all 300ms cubic-bezier(1.000, 0.000, 0.000, 1.000); 
+        transition: all 300ms cubic-bezier(1.000, 0.000, 0.000, 1.000); /* easeInOutExpo */
+        
+  -webkit-transition-property: left, right, top;
+     -moz-transition-property: left, right, top;
+      -ms-transition-property: left, right, top;
+       -o-transition-property: left, right, top;
+          transition-property: left, right, top;
+
+
+                 
+        				}
 			
-#firstbox { background: red; }
-#secondbox { background: yellow }
+#container { background: red }
 
 .size21, .size22, .size23, .twocols { background: #ccc }
 .size31, .size32, .size33, .threecols { background: #ff9999 }
+
+a.btn {
+  margin-right: 1px;
+  line-height: 30px;
+  height: 30px;
+  cursor: pointer;
+  display: inline-block;
+  width: 75px;
+  color: red;
+}

@@ -55,8 +55,8 @@
         },
         animate: true,
         animationOptions: {
-            speed: 50,
-            duration: 200,
+            speed: 20,
+            duration: 100,
             queue: true,
             complete: function () {}
         },
@@ -380,10 +380,7 @@
                 $currTop = $(value['$el']).offset().top;
                 $currWidth = $(value['$el']).width();
                 $currHeight = $(value['$el']).width();
-                
-                if($currTop < 1) {
-                  //$currTop = value['y'];
-                }
+              
                 
                 value['$el'].attr('data-y', $currTop).attr('data-x', $currLeft);                
                 //if animate and queue

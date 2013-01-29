@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title></title>
+<title>Nested</title>
 <link href="style.css" rel="stylesheet" type="text/css" media="screen" />
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
 <script>window.jQuery || document.write('<script src="js/jquery-1.7.1.min.js"><\/script>')</script>
@@ -11,22 +11,9 @@
 </head>
 <body>
 
-<div id="firstbox">
-  <div class="box size21">1</div>
-  <div class="box size32">2</div>
-  <div class="box size11">3</div>
-  <div class="box size21">4</div>
-  <div class="box size12">5</div>
-  <div class="box size11">6</div>
-  <div class="box size21">7</div>
-</div>
+<a class="btn" id="prepend">Prepend</a>
 
-<div>
-  <a id="prepend">Prepend</a>
-  <a id="append">Append</a>
-</div>
-
-<div id="secondbox">
+<div id="container">
   <div class="box size11">1</div>
   <div class="box size21">2</div>
   <div class="box size32">3</div>
@@ -57,18 +44,21 @@
   <div class="box size22">28</div>
 </div>
 
+<a class="btn" id="append">Append</a>
+
 <script type="text/javascript" >
+  
   $(function() { 
-    $('#firstbox').nested(); 
-    $('#secondbox').nested(); 
+   
+    $('#container').nested(); 
     
     $('#prepend').click(function(){
       var boxes = makeBoxes();
-      $('#secondbox').prepend(boxes).nested('prepend',boxes);
+      $('#container').prepend(boxes).nested('prepend',boxes);
     })
     $('#append').click(function(){
       var boxes = makeBoxes();
-      $('#secondbox').append(boxes).nested('append',boxes);     
+      $('#container').append(boxes).nested('append',boxes);     
     })
 
   });
