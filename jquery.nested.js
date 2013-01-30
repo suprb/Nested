@@ -35,6 +35,21 @@
 
 })(jQuery, 'smartresize');
 
+// Simple count object properties
+
+if (!Object.keys) {
+    Object.keys = function (obj) {
+        var keys = [],
+            k;
+        for (k in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, k)) {
+                keys.push(k);
+            }
+        }
+        return keys;
+    };
+}
+
 // The Nested magic
 
 (function ($) {
@@ -143,7 +158,7 @@
                 return false;
             } else this.matrix[y] = {};
             
-            for(var c = 0; c < (this.columns - 2); c++) {
+            for(var c = 0; c < (this.columns - 1); c++) {
                 var x = c * (this.options.minWidth + this.options.gutter);
                 this.matrix[y][x] = 'false';
             }
@@ -449,9 +464,11 @@
         },
 
         resize: function ($els) {
-            this._isResizing = true;
-            this._setBoxes(this.box.find(this.options.selector));
-            this._isResizing = false;
+			if (Object.keys(this.matrix[0]).length % Math.floor(this.element.width() / (this.options.minWidth + this.options.gutter)) > 0) {
+				this._isResizing = true;
+				this._setBoxes(this.box.find(this.options.selector));
+				this._isResizing = false;
+			}
         },
 
     }
