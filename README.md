@@ -1,16 +1,14 @@
 # Nested
 
 jQuery plugin for a total gap free multi column grid layout experience.
-
-Demo: [http://suprb.com/apps/nested/](http://suprb.com/apps/nested/)
+<br>Demo: [http://suprb.com/apps/nested/](http://suprb.com/apps/nested/)
 
 #### Changelog
 
 - **1.0**  
 Initial release
 
-#### Contributor
-
+#### Contributor   
 [Jonas Blomdin](http://github.com/jonasblomdin/)
 
 #### Compare the result
