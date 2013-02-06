@@ -1,5 +1,5 @@
 /**
- * jQuery Nested v1.0
+ * jQuery Nested v1.01
  *
  * For a (total) gap free, multi column, grid layout experience.
  * http://suprb.com/apps/nested/
@@ -113,7 +113,7 @@ if (!Object.keys) {
             // build columns
             var minWidth = this.options.minWidth;
             var gutter = this.options.gutter;
-            var display = !this._isResizing ? "none" : "block";
+            var display = "block";
 
             $els = this.box.find(this.options.selector);
 
@@ -130,7 +130,9 @@ if (!Object.keys) {
                     'display': display,
                     'position': 'absolute',
                     'width': currWidth,
-                    'height': currHeight
+                    'height': currHeight,
+                    'top': $(this).offset().top,
+                    'left': $(this).offset().left
                 }).removeClass('nested-moved').attr('data-box', self.idCounter).attr('data-width', currWidth);
 
                 self.idCounter++;

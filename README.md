@@ -5,6 +5,9 @@ jQuery Nested plugin for a gap free, multi column grid layout experience.
 
 #### Changelog
 
+- **1.01**  
+Fixed bug when first element was not rendered
+
 - **1.0**  
 Initial release
 
