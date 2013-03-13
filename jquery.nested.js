@@ -131,8 +131,8 @@ if (!Object.keys) {
                     'position': 'absolute',
                     'width': currWidth,
                     'height': currHeight,
-                    'top': $(this).offset().top,
-                    'left': $(this).offset().left
+                    'top': $(this).position().top,
+                    'left': $(this).position().left
                 }).removeClass('nested-moved').attr('data-box', self.idCounter).attr('data-width', currWidth);
 
                 self.idCounter++;
@@ -168,8 +168,8 @@ if (!Object.keys) {
 
         _updateMatrix: function (el) {
             var height = 0;
-            var t = parseInt(el['y']) - this.box.offset().top;
-            var l = parseInt(el['x']) - this.box.offset().left;
+            var t = parseInt(el['y']) - this.box.position().top;
+            var l = parseInt(el['x']) - this.box.position().left;
             for (var h = 0; h < el['height']; h += (this.options.minWidth + this.options.gutter)) {
                 for (var w = 0; w < el['width']; w += (this.options.minWidth + this.options.gutter)) {
                     var x = l + w;
@@ -208,7 +208,7 @@ if (!Object.keys) {
             // Used to keep the highest y value for a box in memory
             var topY = arr[0]['y'];
 
-            // Used for current y with added offset
+            // Used for current y with added position
             var actualY = 0;
 
             // Current number of rows in matrix
@@ -216,7 +216,7 @@ if (!Object.keys) {
 
             $.each(this.matrix, function (y, row) {
                 rowsLeft--;
-                actualY = parseInt(y) + parseInt(self.box.offset().top);
+                actualY = parseInt(y) + parseInt(self.box.position().top);
                 $.each(row, function (x, col) {
 
                     if (col === 'false' && actualY < topY) {
@@ -246,8 +246,8 @@ if (!Object.keys) {
                                 $(el['$el']).addClass('nested-moved');
                                 self.elements.push({
                                     $el: $(el['$el']),
-                                    x: parseInt(box.x) + self.box.offset().left,
-                                    y: parseInt(box.y) + self.box.offset().top,
+                                    x: parseInt(box.x) + self.box.position().left,
+                                    y: parseInt(box.y) + self.box.position().top,
                                     col: i,
                                     width: parseInt(box.w),
                                     height: parseInt(box.h)
@@ -347,8 +347,8 @@ if (!Object.keys) {
             if (method == "prepend") {
                 this.elements.unshift({
                     $el: $el,
-                    x: x + this.box.offset().left,
-                    y: y + this.box.offset().top,
+                    x: x + this.box.position().left,
+                    y: y + this.box.position().top,
                     width: w,
                     height: h,
                     cols: cols,
@@ -357,8 +357,8 @@ if (!Object.keys) {
             } else {
                 this.elements.push({
                     $el: $el,
-                    x: x + this.box.offset().left,
-                    y: y + this.box.offset().top,
+                    x: x + this.box.position().left,
+                    y: y + this.box.position().top,
                     width: w,
                     height: h,
                     cols: cols,
@@ -371,7 +371,7 @@ if (!Object.keys) {
             var self = this;
             $.each($els, function (index, value) {
                 // set maxHeight
-                var colY = (value['y'] + value['height']) - self.box.offset().top;
+                var colY = (value['y'] + value['height']) - self.box.position().top;
                 if (colY > self.maxHeight) {
                     self.maxHeight = colY;
                 }
@@ -398,8 +398,8 @@ if (!Object.keys) {
 
             $.each($els, function (index, value) {
 
-                $currLeft = $(value['$el']).offset().left;
-                $currTop = $(value['$el']).offset().top;
+                $currLeft = $(value['$el']).position().left;
+                $currTop = $(value['$el']).position().top;
                 $currWidth = $(value['$el']).width();
                 $currHeight = $(value['$el']).width();
 
