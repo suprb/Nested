@@ -414,7 +414,7 @@ if (!Object.keys) {
                             'height': value['height'],
                         }).animate({
                             'left': value['x'],
-                            'top': value['y'],
+                            'top': value['y']
                         }, duration);
                         t++;
                         if (t == $els.length) {
@@ -430,10 +430,10 @@ if (!Object.keys) {
                         value['$el'].css({
                             'display': 'block',
                             'width': value['width'],
-                            'height': value['height'],
+                            'height': value['height']
                         }).animate({
                             'left': value['x'],
-                            'top': value['y'],
+                            'top': value['y']
                         }, duration);
                         t++;
                         if (t == $els.length) {
@@ -450,7 +450,7 @@ if (!Object.keys) {
                         'width': value['width'],
                         'height': value['height'],
                         'left': value['x'],
-                        'top': value['y'],
+                        'top': value['y']
                     });
                     t++;
                     if (t == $els.length) {
