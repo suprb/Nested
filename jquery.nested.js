@@ -74,7 +74,7 @@ if (!Object.keys) {
             duration: 100,
             queue: true,
             complete: function () {}
-        },
+        }
     };
 
     $.Nested.prototype = {
@@ -352,7 +352,7 @@ if (!Object.keys) {
                     width: w,
                     height: h,
                     cols: cols,
-                    rows: rows,
+                    rows: rows
                 });
             } else {
                 this.elements.push({
@@ -362,7 +362,7 @@ if (!Object.keys) {
                     width: w,
                     height: h,
                     cols: cols,
-                    rows: rows,
+                    rows: rows
                 });
             }
         },
