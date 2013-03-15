@@ -62,6 +62,7 @@ if (!Object.keys) {
     $.Nested.settings = {
         selector: '.box',
         minWidth: 50,
+        minHeight: 50,
         minColumns: 1,
         gutter: 1,
         resizeToFit: true, // will resize block bigger than the gap
@@ -112,6 +113,7 @@ if (!Object.keys) {
 
             // build columns
             var minWidth = this.options.minWidth;
+            var minHeight = this.options.minHeight;
             var gutter = this.options.gutter;
             var display = "block";
 
@@ -124,7 +126,7 @@ if (!Object.keys) {
                 var y = (dim[1] == "a") ? 1 : parseFloat(dim[1]);
 
                 var currWidth = minWidth * x + gutter * (x - 1);
-                var currHeight = minWidth * y + gutter * (y - 1);
+                var currHeight = minHeight * y + gutter * (y - 1);
 
                 $(this).css({
                     'display': display,
@@ -133,7 +135,7 @@ if (!Object.keys) {
                     'height': currHeight,
                     'top': $(this).offset().top,
                     'left': $(this).offset().left
-                }).removeClass('nested-moved').attr('data-box', self.idCounter).attr('data-width', currWidth);
+                }).removeClass('nested-moved').attr('data-box', self.idCounter).attr('data-width', currWidth).attr('data-height', currHeight);
 
                 self.idCounter++;
 
@@ -170,7 +172,7 @@ if (!Object.keys) {
             var height = 0;
             var t = parseInt(el['y']) - this.box.offset().top;
             var l = parseInt(el['x']) - this.box.offset().left;
-            for (var h = 0; h < el['height']; h += (this.options.minWidth + this.options.gutter)) {
+            for (var h = 0; h < el['height']; h += (this.options.minHeight + this.options.gutter)) {
                 for (var w = 0; w < el['width']; w += (this.options.minWidth + this.options.gutter)) {
                     var x = l + w;
                     var y = t + h;
@@ -223,7 +225,7 @@ if (!Object.keys) {
                         if (!box.y) box.y = y;
                         if (!box.x) box.x = x;
                         if (!box.w) box.w = 0;
-                        if (!box.h) box.h = self.options.minWidth;
+                        if (!box.h) box.h = self.options.minHeight;
                         box.w += (box.w) ? (self.options.minWidth + self.options.gutter) : self.options.minWidth;
 
                         var addonHeight = 0;
@@ -235,7 +237,7 @@ if (!Object.keys) {
                             } else break;
                         }
 
-                        box.h + (parseInt(addonHeight) / (self.options.minWidth + self.options.gutter) == rowsLeft) ? 0 : parseInt(addonHeight);
+                        box.h + (parseInt(addonHeight) / (self.options.minHeight + self.options.gutter) == rowsLeft) ? 0 : parseInt(addonHeight);
                         box.ready = true;
 
                     } else if (box.ready) {
@@ -280,7 +282,7 @@ if (!Object.keys) {
 
             // Calculate row and col
             var col = Math.ceil(width / (this.options.minWidth + this.options.gutter));
-            var row = Math.ceil(height / (this.options.minWidth + this.options.gutter));
+            var row = Math.ceil(height / (this.options.minHeight + this.options.gutter));
 
             // lock widest box to match minColumns
             if (col > this.options.minColumns) {
@@ -300,7 +302,7 @@ if (!Object.keys) {
                 for (var column = 0; column < (this.columns - col); column++) {
 
                     // Add default empty matrix, used to calculate and update matrix for each box
-                    matrixY = gridy * (this.options.minWidth + this.options.gutter);
+                    matrixY = gridy * (this.options.minHeight + this.options.gutter);
                     this._addMatrixRow(matrixY);
 
                     var fits = true;
@@ -334,7 +336,7 @@ if (!Object.keys) {
                         }
 
                         // Push to elements array
-                        this._pushItem($box, column * (this.options.minWidth + this.options.gutter), gridy * (this.options.minWidth + this.options.gutter), width, height, col, row, direction);
+                        this._pushItem($box, column * (this.options.minWidth + this.options.gutter), gridy * (this.options.minHeight + this.options.gutter), width, height, col, row, direction);
                         return;
                     }
                 }
@@ -357,8 +359,8 @@ if (!Object.keys) {
             } else {
                 this.elements.push({
                     $el: $el,
-                    x: x + this.box.offset().left,
-                    y: y + this.box.offset().top,
+                    x: x,// + this.box.offset().left, removed as it was causing some odd positioning issue in our setup
+                    y: y,// + this.box.offset().top, removed as it was causing some odd positioning issue in our setup
                     width: w,
                     height: h,
                     cols: cols,
@@ -401,7 +403,7 @@ if (!Object.keys) {
                 $currLeft = $(value['$el']).offset().left;
                 $currTop = $(value['$el']).offset().top;
                 $currWidth = $(value['$el']).width();
-                $currHeight = $(value['$el']).width();
+                $currHeight = $(value['$el']).height();
 
 
                 value['$el'].attr('data-y', $currTop).attr('data-x', $currLeft);
