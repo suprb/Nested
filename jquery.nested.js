@@ -349,8 +349,8 @@ if (!Object.keys) {
             if (method == "prepend") {
                 this.elements.unshift({
                     $el: $el,
-                    x: x + this.box.offset().left,
-                    y: y + this.box.offset().top,
+                    x: x,// + this.box.offset().left, changed as it was causing some odd positioning issue in our setup
+                    y: y,// + this.box.offset().top, changed as it was causing some odd positioning issue in our setup
                     width: w,
                     height: h,
                     cols: cols,
@@ -359,12 +359,12 @@ if (!Object.keys) {
             } else {
                 this.elements.push({
                     $el: $el,
-                    x: x,// + this.box.offset().left, removed as it was causing some odd positioning issue in our setup
-                    y: y,// + this.box.offset().top, removed as it was causing some odd positioning issue in our setup
+                    x: x,// + this.box.offset().left, changed as it was causing some odd positioning issue in our setup
+                    y: y,// + this.box.offset().top, changed as it was causing some odd positioning issue in our setup
                     width: w,
                     height: h,
                     cols: cols,
-                    rows: rows,
+                    rows: rows
                 });
             }
         },
@@ -373,7 +373,7 @@ if (!Object.keys) {
             var self = this;
             $.each($els, function (index, value) {
                 // set maxHeight
-                var colY = (value['y'] + value['height']) - self.box.offset().top;
+                var colY = (value['y'] + value['height']);// - self.box.offset().top; changed as it was causing some odd positioning issue in our setup
                 if (colY > self.maxHeight) {
                     self.maxHeight = colY;
                 }
