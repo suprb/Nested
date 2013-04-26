@@ -66,7 +66,7 @@ if (!Object.keys) {
         gutter: 1,
         resizeToFit: true, // will resize block bigger than the gap
         resizeToFitOptions: {
-            resizeAny: true // will resize any block to fit the gap         
+            resizeAny: true // will resize any block to fit the gap
         },
         animate: true,
         animationOptions: {
@@ -194,7 +194,7 @@ if (!Object.keys) {
         _fillGaps: function () {
             var self = this;
             var box = {};
-
+            if(this.elements.length === 0) return [];
             $.each(this.elements, function (index, el) {
                 self._updateMatrix(el);
             });
