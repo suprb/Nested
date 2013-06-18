@@ -28,7 +28,7 @@
 
             timeout = setTimeout(delayed, threshold || 150);
         };
-    }
+    };
     jQuery.fn[sr] = function (fn) {
         return fn ? this.bind('resize', debounce(fn)) : this.trigger(sr);
     };
@@ -74,7 +74,7 @@ if (!Object.keys) {
             duration: 100,
             queue: true,
             complete: function () {}
-        },
+        }
     };
 
     $.Nested.prototype = {
@@ -352,7 +352,7 @@ if (!Object.keys) {
                     width: w,
                     height: h,
                     cols: cols,
-                    rows: rows,
+                    rows: rows
                 });
             } else {
                 this.elements.push({
@@ -362,7 +362,7 @@ if (!Object.keys) {
                     width: w,
                     height: h,
                     cols: cols,
-                    rows: rows,
+                    rows: rows
                 });
             }
         },
@@ -411,10 +411,10 @@ if (!Object.keys) {
                         value['$el'].css({
                             'display': 'block',
                             'width': value['width'],
-                            'height': value['height'],
+                            'height': value['height']
                         }).animate({
                             'left': value['x'],
-                            'top': value['y'],
+                            'top': value['y']
                         }, duration);
                         t++;
                         if (t == $els.length) {
@@ -430,10 +430,10 @@ if (!Object.keys) {
                         value['$el'].css({
                             'display': 'block',
                             'width': value['width'],
-                            'height': value['height'],
+                            'height': value['height']
                         }).animate({
                             'left': value['x'],
-                            'top': value['y'],
+                            'top': value['y']
                         }, duration);
                         t++;
                         if (t == $els.length) {
@@ -450,7 +450,7 @@ if (!Object.keys) {
                         'width': value['width'],
                         'height': value['height'],
                         'left': value['x'],
-                        'top': value['y'],
+                        'top': value['y']
                     });
                     t++;
                     if (t == $els.length) {
@@ -478,8 +478,7 @@ if (!Object.keys) {
                 this._setBoxes(this.box.find(this.options.selector));
                 this._isResizing = false;
             }
-        },
-
+        }
     }
 
     $.fn.nested = function (options, e) {
