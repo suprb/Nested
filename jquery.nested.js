@@ -119,7 +119,7 @@ if (!Object.keys) {
 
             $.each($els, function () {
 
-                var dim = parseInt($(this).attr('class').replace(/^.*size([0-9]+).*$/, '$1')).toString().split('');
+                var dim = $(this).attr('class').replace(/\D/g,'');
                 var x = (dim[0] == "N") ? 1 : parseFloat(dim[0]);
                 var y = (dim[1] == "a") ? 1 : parseFloat(dim[1]);
 
