@@ -289,7 +289,7 @@ if (!Object.keys) {
 
             while (true) {
 
-                for (var y = col; y >= 0; y--) {
+                for (var y = row; y >= 0; y--) {
                     if (this.gridrow[gridy + y]) break;
                     this.gridrow[gridy + y] = new Object;
                     for (var x = 0; x < this.columns; x++) {
