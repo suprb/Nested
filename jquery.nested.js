@@ -1,5 +1,5 @@
 /**
- * jQuery Nested v1.01
+ * jQuery Nested v1.02
  *
  * For a (total) gap free, multi column, grid layout experience.
  * http://suprb.com/apps/nested/
@@ -417,7 +417,7 @@ if (!Object.keys) {
                             'top': value['y']
                         }, duration);
                         t++;
-                        if (t == $els.length) {
+                        if (t == i) {
                             complete.call(undefined, $els)
                         }
                     }, i * speed);
@@ -436,7 +436,7 @@ if (!Object.keys) {
                             'top': value['y']
                         }, duration);
                         t++;
-                        if (t == $els.length) {
+                        if (t == i) {
                             complete.call(undefined, $els)
                         }
                     }, i);
@@ -453,11 +453,14 @@ if (!Object.keys) {
                         'top': value['y']
                     });
                     t++;
-                    if (t == $els.length) {
+                    if (t == i) {
                         complete.call(undefined, $els)
                     }
                 }
             });
+            if (i == 0) {
+                complete.call(undefined, $els)
+            }
         },
 
         append: function ($els) {
