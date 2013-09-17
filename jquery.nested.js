@@ -383,7 +383,10 @@ if (!Object.keys) {
             var self = this;
 
             // set container height
-            this.box.css('height', this._setHeight($els));
+            this.box.css({
+              'height': this._setHeight($els),
+              'position': 'static'
+            });
 
             $els.reverse();
             var speed = this.options.animationOptions.speed;
