@@ -3,7 +3,7 @@ body {	background-color:#e1e1e1;
 				font-family: Arial, sans-serif;
 				font-size:11px;
 				line-height: 14px;
-				padding:1px;
+				padding:0px;
 				margin:0px;	
 				}
 
@@ -31,7 +31,7 @@ body {	background-color:#e1e1e1;
                  
         				}
 			
-#container { background: red }
+#container { background: red;}
 
 .size21, .size22, .size23, .twocols { background: #ccc }
 .size31, .size32, .size33, .threecols { background: #ff9999 }
