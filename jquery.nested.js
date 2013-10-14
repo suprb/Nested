@@ -112,8 +112,6 @@ if (!Object.keys) {
 
             var calcWidth = !this.options.centered ? this.box.innerWidth() : $(window).width();
 
-            console.log(calcWidth)
-
             this.columns = Math.max(this.options.minColumns, parseInt(calcWidth / (this.options.minWidth + this.options.gutter)) + 1);
 
             // build columns
@@ -361,7 +359,6 @@ if (!Object.keys) {
                     rows: rows
                 });
             } else {
-                console.log(this.box.position().top)
                 this.elements.push({
                     $el: $el,
                     x: x,
