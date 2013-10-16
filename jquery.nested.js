@@ -404,7 +404,7 @@ if (!Object.keys) {
             var self = this;
             $.each($els, function (index, value) {
                 // set maxHeight
-                var colY = (value.y + value.height);
+                var colY = (value.y + value.$el.outerHeight(true));
                 if (colY > self.maxHeight) {
                     self.maxHeight = colY;
                 }
