@@ -20,11 +20,17 @@
                 args = arguments;
 
             function delayed() {
-                if (!execAsap) func.apply(obj, args);
+                if (!execAsap) {
+                    func.apply(obj, args);
+                }
                 timeout = null;
-            };
-            if (timeout) clearTimeout(timeout);
-            else if (execAsap) func.apply(obj, args);
+            }
+            if (timeout) {
+                clearTimeout(timeout);
+            }
+            else if (execAsap) {
+                func.apply(obj, args);
+            }
 
             timeout = setTimeout(delayed, threshold || 150);
         };
@@ -67,8 +73,9 @@ if (!Object.keys) {
         centered: false,
         resizeToFit: true, // will resize block bigger than the gap
         resizeToFitOptions: {
-            resizeAny: true // will resize any block to fit the gap         
+            resizeAny: true // will resize any block to fit the gap
         },
+        suspendBelow: null,
         animate: true,
         animationOptions: {
             speed: 20,
@@ -87,16 +94,34 @@ if (!Object.keys) {
             this.options = $.extend(true, {}, $.Nested.settings, options);
             this.elements = [];
             this._isResizing = false;
+            this._isSuspended = false;
             this._update = true;
-            this.maxy = new Array();
+            this.maxy = [];
 
             // add smartresize
             $(window).smartresize(function () {
                 container.resize();
             });
 
-            // build box dimensions
-            this._setBoxes();
+            // Don't fire the layout if the user requested not to do so below
+            // a certain width of the viewport
+            if (this.options.suspendBelow === null ||
+               (this.options.suspendBelow !== null && $(window).width() > this.options.suspendBelow)) {
+                // build box dimensions
+                this._setBoxes();
+            }
+            else {
+                this._isSuspended = true;
+            }
+        },
+
+        _restoreInitialState: function () {
+            // Restore CSS rules for the container from the stylesheet
+            $(this.box).attr('style', '');
+            var $els = this.box.find(this.options.selector);
+            $.each($els, function () {
+                $els.attr('style', '');
+            });
         },
 
         _setBoxes: function ($els, method) {
@@ -108,11 +133,11 @@ if (!Object.keys) {
             this.currWidth = 0;
             this.total = this.box.find(this.options.selector);
             this.matrix = {};
-            this.gridrow = new Object;
+            this.gridrow = {};
 
             var calcWidth = !this.options.centered ? this.box.innerWidth() : $(window).width();
 
-            this.columns = Math.max(this.options.minColumns, parseInt(calcWidth / (this.options.minWidth + this.options.gutter)) + 1);
+            this.columns = Math.max(this.options.minColumns, parseInt(calcWidth / (this.options.minWidth + this.options.gutter), 10) + 1);
 
             // build columns
             var minWidth = this.options.minWidth;
@@ -123,9 +148,9 @@ if (!Object.keys) {
 
             $.each($els, function () {
 
-                var dim = parseInt($(this).attr('class').replace(/^.*size([0-9]+).*$/, '$1')).toString().split('');
-                var x = (dim[0] == "N") ? 1 : parseFloat(dim[0]);
-                var y = (dim[1] == "a") ? 1 : parseFloat(dim[1]);
+                var dim = parseInt($(this).attr('class').replace(/^.*size([0-9]+).*$/, '$1'), 10).toString().split('');
+                var x = (dim[0] === "N") ? 1 : parseFloat(dim[0]);
+                var y = (dim[1] === "a") ? 1 : parseFloat(dim[1]);
 
                 var currWidth = minWidth * x + gutter * (x - 1);
                 var currHeight = minWidth * y + gutter * (y - 1);
@@ -147,7 +172,7 @@ if (!Object.keys) {
             });
 
             // position grid
-            if (self.counter == self.total.length) {
+            if (self.counter === self.total.length) {
 
                 // if option resizeToFit is true
                 if (self.options.resizeToFit) {
@@ -162,7 +187,9 @@ if (!Object.keys) {
         _addMatrixRow: function (y) {
             if (this.matrix[y]) {
                 return false;
-            } else this.matrix[y] = {};
+            } else {
+                this.matrix[y] = {};
+            }
 
             for (var c = 0; c < (this.columns - 1); c++) {
                 var x = c * (this.options.minWidth + this.options.gutter);
@@ -171,11 +198,10 @@ if (!Object.keys) {
         },
 
         _updateMatrix: function (el) {
-            var height = 0;
-            var t = parseInt(el['y']);
-            var l = parseInt(el['x']);
-            for (var h = 0; h < el['height']; h += (this.options.minWidth + this.options.gutter)) {
-                for (var w = 0; w < el['width']; w += (this.options.minWidth + this.options.gutter)) {
+            var t = parseInt(el.y, 10);
+            var l = parseInt(el.x, 10);
+            for (var h = 0; h < el.height; h += (this.options.minWidth + this.options.gutter)) {
+                for (var w = 0; w < el.width; w += (this.options.minWidth + this.options.gutter)) {
                     var x = l + w;
                     var y = t + h;
                     if (!this.matrix[y]) {
@@ -188,7 +214,7 @@ if (!Object.keys) {
 
         _getObjectSize: function (obj) { // Helper to get size of object, should probably be moved
             var size = 0;
-            $.each(obj, function (p, v) {
+            $.each(obj, function () {
                 size++;
             });
             return size;
@@ -210,7 +236,7 @@ if (!Object.keys) {
             arr.reverse();
 
             // Used to keep the highest y value for a box in memory
-            var topY = arr[0]['y'];
+            var topY = arr[0].y;
 
             // Used for current y with added offset
             var actualY = 0;
@@ -220,41 +246,42 @@ if (!Object.keys) {
 
             $.each(this.matrix, function (y, row) {
                 rowsLeft--;
-                actualY = parseInt(y); // + parseInt(self.box.offset().top);
+                actualY = parseInt(y, 10);
                 $.each(row, function (x, col) {
 
                     if (col === 'false' && actualY < topY) {
-                        if (!box.y) box.y = y;
-                        if (!box.x) box.x = x;
-                        if (!box.w) box.w = 0;
-                        if (!box.h) box.h = self.options.minWidth;
+                        if (!box.y) { box.y = y; }
+                        if (!box.x) { box.x = x; }
+                        if (!box.w) { box.w = 0; }
+                        if (!box.h) { box.h = self.options.minWidth; }
                         box.w += (box.w) ? (self.options.minWidth + self.options.gutter) : self.options.minWidth;
 
                         var addonHeight = 0;
                         for (var row = 1; row < rowsLeft; row++) {
-                            var z = parseInt(y) + parseInt(row * (self.options.minWidth + self.options.gutter));
-                            if (self.matrix[z] && self.matrix[z][x] == 'false') {
+                            var z = parseInt(y, 10) + parseInt(row * (self.options.minWidth + self.options.gutter), 10);
+                            if (self.matrix[z] && self.matrix[z][x] === 'false') {
                                 addonHeight += (self.options.minWidth + self.options.gutter);
                                 self.matrix[z][x] = 'true';
-                            } else break;
+                            } else {
+                                break;
+                            }
                         }
 
-                        box.h + (parseInt(addonHeight) / (self.options.minWidth + self.options.gutter) == rowsLeft) ? 0 : parseInt(addonHeight);
                         box.ready = true;
 
                     } else if (box.ready) {
 
                         $.each(arr, function (i, el) {
-                            if (box.y <= arr[i]['y'] && (self.options.resizeToFitOptions.resizeAny || box.w <= arr[i]['width'] && box.h <= arr[i]['height'])) {
+                            if (box.y <= arr[i].y && (self.options.resizeToFitOptions.resizeAny || box.w <= arr[i].width && box.h <= arr[i].height)) {
                                 arr.splice(i, 1);
-                                $(el['$el']).addClass('nested-moved');
+                                $(el.$el).addClass('nested-moved');
                                 self.elements.push({
-                                    $el: $(el['$el']),
-                                    x: parseInt(box.x),
-                                    y: parseInt(box.y),
+                                    $el: $(el.$el),
+                                    x: parseInt(box.x, 10),
+                                    y: parseInt(box.y, 10),
                                     col: i,
-                                    width: parseInt(box.w),
-                                    height: parseInt(box.h)
+                                    width: parseInt(box.w, 10),
+                                    height: parseInt(box.h, 10)
                                 });
 
                                 return false;
@@ -274,8 +301,7 @@ if (!Object.keys) {
         _renderGrid: function ($box, method) {
 
             this.counter++;
-            var ypos, gridy = ypos = 0;
-            var tot = 0;
+            var gridy = 0;
             var direction = !method ? "append" : "prepend";
 
             // Width & height
@@ -292,11 +318,14 @@ if (!Object.keys) {
             }
 
             while (true) {
+              var x, y;
 
-                for (var y = col; y >= 0; y--) {
-                    if (this.gridrow[gridy + y]) break;
-                    this.gridrow[gridy + y] = new Object;
-                    for (var x = 0; x < this.columns; x++) {
+                for (y = col; y >= 0; y--) {
+                    if (this.gridrow[gridy + y]) {
+                        break;
+                    }
+                    this.gridrow[gridy + y] = {};
+                    for (x = 0; x < this.columns; x++) {
                         this.gridrow[gridy + y][x] = false;
                     }
                 }
@@ -304,13 +333,13 @@ if (!Object.keys) {
                 for (var column = 0; column < (this.columns - col); column++) {
 
                     // Add default empty matrix, used to calculate and update matrix for each box
-                    matrixY = gridy * (this.options.minWidth + this.options.gutter);
+                    var matrixY = gridy * (this.options.minWidth + this.options.gutter);
                     this._addMatrixRow(matrixY);
 
                     var fits = true;
 
-                    for (var y = 0; y < row; y++) {
-                        for (var x = 0; x < col; x++) {
+                    for (y = 0; y < row; y++) {
+                        for (x = 0; x < col; x++) {
 
                             if (!this.gridrow[gridy + y]) {
                                 break;
@@ -327,13 +356,13 @@ if (!Object.keys) {
                     }
                     if (fits) {
                         // Set as taken
-                        for (var y = 0; y < row; y++) {
-                            for (var x = 0; x < col; x++) {
+                        for (var i = 0; i < row; i++) {
+                            for (var j = 0; j < col; j++) {
 
-                                if (!this.gridrow[gridy + y]) {
+                                if (!this.gridrow[gridy + i]) {
                                     break;
                                 }
-                                this.gridrow[gridy + y][column + x] = true;
+                                this.gridrow[gridy + i][column + j] = true;
                             }
                         }
 
@@ -348,7 +377,7 @@ if (!Object.keys) {
 
         _pushItem: function ($el, x, y, w, h, cols, rows, method) {
 
-            if (method == "prepend") {
+            if (method === "prepend") {
                 this.elements.unshift({
                     $el: $el,
                     x: x,
@@ -375,7 +404,7 @@ if (!Object.keys) {
             var self = this;
             $.each($els, function (index, value) {
                 // set maxHeight
-                var colY = (value['y'] + value['height']);
+                var colY = (value.y + value.$el.outerHeight(true));
                 if (colY > self.maxHeight) {
                     self.maxHeight = colY;
                 }
@@ -387,7 +416,7 @@ if (!Object.keys) {
             var self = this;
             $.each($els, function (index, value) {
                 // set maxWidth
-                var colX = (value['x'] + value['width']);
+                var colX = (value.x + value.width);
                 if (colX > self.currWidth) {
                     self.currWidth = colX;
                 }
@@ -396,7 +425,6 @@ if (!Object.keys) {
         },
 
         _renderItems: function ($els) {
-            var self = this;
 
             // set container height and width
             this.box.css('height', this._setHeight($els));
@@ -406,79 +434,75 @@ if (!Object.keys) {
 
             $els.reverse();
             var speed = this.options.animationOptions.speed;
-            var effect = this.options.animationOptions.effect;
             var duration = this.options.animationOptions.duration;
             var queue = this.options.animationOptions.queue;
             var animate = this.options.animate;
             var complete = this.options.animationOptions.complete;
-            var item = this;
             var i = 0;
             var t = 0;
 
             $.each($els, function (index, value) {
 
-                $currLeft = $(value['$el']).position().left;
-                $currTop = $(value['$el']).position().top;
-                $currWidth = $(value['$el']).width();
-                $currHeight = $(value['$el']).width();
+                var $currLeft = $(value.$el).position().left;
+                var $currTop = $(value.$el).position().top;
 
-                value['$el'].attr('data-y', $currTop).attr('data-x', $currLeft);
-                
+                value.$el.attr('data-y', $currTop).attr('data-x', $currLeft);
+
                 //if animate and queue
-                if (animate && queue && ($currLeft != value['x'] || $currTop != value['y'])) {
+                if (animate && queue && ($currLeft !== value.x || $currTop !== value.y)) {
                     setTimeout(function () {
-                        value['$el'].css({
+                        value.$el.css({
                             'display': 'block',
-                            'width': value['width'],
-                            'height': value['height']
+                            'width': value.width,
+                            'height': value.height
                         }).animate({
-                            'left': value['x'],
-                            'top': value['y']
+                            'left': value.x,
+                            'top': value.y
                         }, duration);
                         t++;
-                        if (t == i) {
-                            complete.call(undefined, $els)
+                        if (t === i) {
+                            complete.call(undefined, $els);
                         }
                     }, i * speed);
                     i++;
                 }
 
                 //if animate and no queue
-                if (animate && !queue && ($currLeft != value['x'] || $currTop != value['y'])) {
+                if (animate && !queue && ($currLeft !== value.x || $currTop !== value.y)) {
                     setTimeout(function () {
-                        value['$el'].css({
+                        value.$el.css({
                             'display': 'block',
-                            'width': value['width'],
-                            'height': value['height']
+                            'width': value.width,
+                            'height': value.height
                         }).animate({
-                            'left': value['x'],
-                            'top': value['y']
+                            'left': value.x,
+                            'top': value.y
                         }, duration);
                         t++;
-                        if (t == i) {
-                            complete.call(undefined, $els)
+                        if (t === i) {
+                            complete.call(undefined, $els);
                         }
                     }, i);
                     i++;
                 }
 
                 //if no animation and no queue
-                if (!animate && ($currLeft != value['x'] || $currTop != value['y'])) {
-                    value['$el'].css({
+                if (!animate && ($currLeft !== value.x || $currTop !== value.y)) {
+                    value.$el.css({
                         'display': 'block',
-                        'width': value['width'],
-                        'height': value['height'],
-                        'left': value['x'],
-                        'top': value['y']
+                        'width': value.width,
+                        'height': value.height,
+                        'left': value.x,
+                        'top': value.y
                     });
                     t++;
-                    if (t == i) {
-                        complete.call(undefined, $els)
+                    if (t === i) {
+                        complete.call(undefined, $els);
                     }
                 }
             });
-            if (i == 0) {
-                complete.call(undefined, $els)
+            if (i === 0) {
+                complete.call(undefined, $els);
             }
         },
 
@@ -494,14 +518,22 @@ if (!Object.keys) {
             this._isResizing = false;
         },
 
-        resize: function ($els) {
-            if (Object.keys(this.matrix[0]).length % Math.floor(this.element.width() / (this.options.minWidth + this.options.gutter)) > 0) {
+        resize: function () {
+            if (this._isSuspended === false && Object.keys(this.matrix[0]).length % Math.floor(this.element.width() / (this.options.minWidth + this.options.gutter)) > 0) {
                 this._isResizing = true;
                 this._setBoxes(this.box.find(this.options.selector));
                 this._isResizing = false;
             }
+            else if (this.options.suspendBelow !== null && $(window).width() < this.options.suspendBelow) {
+                this._restoreInitialState();
+                this._isSuspended = true;
+            }
+            else if (this._isSuspended === true && $(window).width() >= this.options.suspendBelow) {
+                this._isSuspended = false;
+                this._setBoxes();
+            }
         }
-    }
+    };
 
     $.fn.nested = function (options, e) {
         if (typeof options === 'string') {
@@ -515,6 +547,6 @@ if (!Object.keys) {
             });
         }
         return this;
-    }
+    };
 
 })(jQuery);
