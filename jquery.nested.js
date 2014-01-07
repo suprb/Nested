@@ -112,6 +112,11 @@ if (!Object.keys) {
 
             var calcWidth = !this.options.centered ? this.box.innerWidth() : $(window).width();
 
+			// Max width
+            if (this.options.maxWidth && $(window).width() > this.options.maxWidth) {
+	            calcWidth = this.options.maxWidth;
+            }
+
             this.columns = Math.max(this.options.minColumns, parseInt(calcWidth / (this.options.minWidth + this.options.gutter)) + 1);
 
             // build columns
