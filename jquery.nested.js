@@ -500,11 +500,68 @@ if (!Object.keys) {
                 this._setBoxes(this.box.find(this.options.selector));
                 this._isResizing = false;
             }
+        },
+      
+        refresh: function(options) {
+        	
+        	options = options || this.options;
+        
+            this.options = $.extend(true, {}, $.Nested.settings, options);
+            this.elements = [];
+            this._isResizing = false;
+
+            // build box dimensions
+            this._setBoxes();
+        },
+        
+        destroy: function() {
+			
+			var container = this;
+
+            $(window).unbind("resize", function () {
+                container.resize();
+            });
+	        
+	        // unbind the resize event
+            $els = this.box.find(this.options.selector);
+            $($els).removeClass('nested-moved').removeAttr('style data-box data-width data-x data-y').removeData();
+            
+            this.box.removeAttr("style").removeData();
         }
+        
     }
 
+
+	var methods =
+	{
+		refresh: function(options) {
+			return this.each(function(){
+				var $this=$(this);
+				var nested = $this.data('nested');
+				
+				nested.refresh(options);
+			});
+		},
+		
+		destroy: function() {
+			return this.each(function(){
+				var $this=$(this);
+				var nested = $this.data('nested');
+				
+				nested.destroy();
+			});
+		}
+	};
+	
+	
+
     $.fn.nested = function (options, e) {
-        if (typeof options === 'string') {
+
+		if(methods[options]) {
+			return methods[options].apply(this, Array.prototype.slice.call(arguments, 1));
+		}        
+		
+		if (typeof options === 'string') {
             this.each(function () {
                 var container = $.data(this, 'nested');
                 container[options].apply(container, [e]);
