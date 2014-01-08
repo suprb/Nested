@@ -113,8 +113,8 @@ if (!Object.keys) {
             var calcWidth = !this.options.centered ? this.box.innerWidth() : $(window).width();
 
 			// Max width
-            if (this.options.maxWidth && $(window).width() > this.options.maxWidth) {
-	            calcWidth = this.options.maxWidth;
+            if (this.options.maxContainerWidth && $(window).width() > this.options.maxContainerWidth) {
+	            calcWidth = this.options.maxContainerWidth;
             }
 
             this.columns = Math.max(this.options.minColumns, parseInt(calcWidth / (this.options.minWidth + this.options.gutter)) + 1);
@@ -391,7 +391,6 @@ if (!Object.keys) {
         _setWidth: function ($els) {
             var self = this;
             $.each($els, function (index, value) {
-                // set maxWidth
                 var colX = (value['x'] + value['width']);
                 if (colX > self.currWidth) {
                     self.currWidth = colX;
