@@ -504,13 +504,13 @@ if (!Object.keys) {
       
         refresh: function(options) {
         	
+        	// Refresh the nested tiles with the new options in case has 
         	options = options || this.options;
         
             this.options = $.extend(true, {}, $.Nested.settings, options);
             this.elements = [];
             this._isResizing = false;
 
-            // build box dimensions
             this._setBoxes();
         },
         
@@ -518,13 +518,13 @@ if (!Object.keys) {
 			
 			var container = this;
 
+	        // unbind the resize event
             $(window).unbind("resize", function () {
                 container.resize();
             });
 	        
-	        // unbind the resize event
             $els = this.box.find(this.options.selector);
-            $($els).removeClass('nested-moved').removeAttr('style data-box data-width data-x data-y').removeData();
+			$els.removeClass('nested-moved').removeAttr('style data-box data-width data-x data-y').removeData();
             
             this.box.removeAttr("style").removeData();
         }
