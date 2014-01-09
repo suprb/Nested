@@ -74,6 +74,7 @@ if (!Object.keys) {
             speed: 20,
             duration: 100,
             queue: true,
+            fromDirection: null,
             complete: function () {}
         }
     };
@@ -87,6 +88,7 @@ if (!Object.keys) {
             this.options = $.extend(true, {}, $.Nested.settings, options);
             this.elements = [];
             this._isResizing = false;
+            this._hasAnimated = false;
             this._update = true;
             this.maxy = new Array();
 
@@ -100,6 +102,7 @@ if (!Object.keys) {
         },
 
         _setBoxes: function ($els, method) {
+  
             var self = this;
             this.idCounter = 0;
             this.counter = 0;
@@ -117,9 +120,10 @@ if (!Object.keys) {
             // build columns
             var minWidth = this.options.minWidth;
             var gutter = this.options.gutter;
-            var display = "block";
+            var display = this.options.animationOptions.fromDirection && !this._hasAnimated ? "none" : "block";
 
             $els = this.box.find(this.options.selector);
+
 
             $.each($els, function () {
 
@@ -153,7 +157,70 @@ if (!Object.keys) {
                 if (self.options.resizeToFit) {
                     self.elements = self._fillGaps();
                 }
+                
+                /*
+                 * Set up the initial position of the boxes before render the items
+                 ---------------------------------------------------------------------------- */
+				var animFromDirection;
+	        	if ((animFromDirection = this.options.animationOptions.fromDirection) && !self._hasAnimated) {
+					
+	        		var directions = animFromDirection.replace(/\s?/ig,"").split(",");
+			
+					// Set the box height in case the animation comes from the bottom or centered		
+					if ((directions.indexOf("bottom") != -1) || (directions[0] == "center")) {
+		        		this.box.css({height: this._setHeight(self.elements), width: this._setWidth(self.elements) });
+		        	}
+		        	
+	        		// Look at all directions
+	        		$(directions).each(function(index, dir) {
+	        			
+						if (dir == "right") {
+							$els.each(function(i, e) {
+								$(this).css({left: self.box.outerWidth() - $(this).outerWidth() });
+							});
+						}
+						
+						if (dir == "bottom") {
+							$els.each(function(i, e) {
+								$(this).css({top: self.box.outerHeight() - $(this).outerHeight() });
+							});
+						}
+						
+						if (dir == "center") {
+						
+							if (directions.length > 1) {
+
+								if (index == 0) {
+									// vertical
+									$els.each(function(i, e) {
+										$(this).css({top: self.box.outerHeight() * 0.5 - $(this).outerHeight() * 0.5 });
+									});
+								} else {
+									// horizontal
+									$els.each(function(i, e) {
+										$(this).css({left: self.box.outerWidth() * 0.5 - $(this).outerWidth() * 0.5 });
+									});
+								}
+								
+							} else {
+								// both centered
+								$els.each(function(i, e) {
+									$(this).css({top: self.box.outerHeight() * 0.5 - $(this).outerHeight() * 0.5, left: self.box.outerWidth() * 0.5 - $(this).outerWidth() * 0.5 });
+								});
+							}	
+						}
+	        		})
+	        	
+					// show the elements back on again
+					$els.show();
+					this.box.css('width', 'auto');
+					
+					self._hasAnimated = true;
+	        	}
+	      
+                // Render the items            
                 self._renderItems(self.elements);
+                
                 // reset elements
                 self.elements = [];
             }
@@ -386,7 +453,6 @@ if (!Object.keys) {
         _setWidth: function ($els) {
             var self = this;
             $.each($els, function (index, value) {
-                // set maxWidth
                 var colX = (value['x'] + value['width']);
                 if (colX > self.currWidth) {
                     self.currWidth = colX;
@@ -510,6 +576,7 @@ if (!Object.keys) {
             this.options = $.extend(true, {}, $.Nested.settings, options);
             this.elements = [];
             this._isResizing = false;
+            this._hasAnimated = false;
 
             this._setBoxes();
         },
