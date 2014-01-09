@@ -112,7 +112,7 @@ if (!Object.keys) {
 
             var calcWidth = !this.options.centered ? this.box.innerWidth() : $(window).width();
 
-			// Max width
+			// Max container width
             if (this.options.maxContainerWidth && $(window).width() > this.options.maxContainerWidth) {
 	            calcWidth = this.options.maxContainerWidth;
             }
@@ -404,8 +404,9 @@ if (!Object.keys) {
 
             // set container height and width
             this.box.css('height', this._setHeight($els));
-            if (this.options.centered) {
-                this.box.css({'width' : this._setWidth($els), 'margin-left' : 'auto', 'margin-right' : 'auto'});
+            if (this.options.centered || this.options.maxContainerWidth) {
+                this.box.css({'width' : this._setWidth($els)});
+                if (this.options.centered) this.box.css({'margin-left' : 'auto', 'margin-right' : 'auto'});
             }
 
             $els.reverse();
