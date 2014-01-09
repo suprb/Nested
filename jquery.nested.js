@@ -167,7 +167,7 @@ if (!Object.keys) {
 	        		var directions = animFromDirection.replace(/\s?/ig,"").split(",");
 			
 					// Set the box height in case the animation comes from the bottom or centered		
-					if ((directions.indexOf("bottom") != -1) || (directions[0] == "center")) {
+					if (($.inArray("bottom", directions)) || (directions[0] == "center")) {
 		        		this.box.css({height: this._setHeight(self.elements), width: this._setWidth(self.elements) });
 		        	}
 		        	
